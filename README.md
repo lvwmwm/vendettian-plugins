@@ -7,3 +7,4 @@ https://lvwmwm.github.io/vendettian-plugins/`PLUGIN_NAME`
 
 ## Plugins List:
 - PermissionViewer: [Install Link](https://lvwmwm.github.io/vendettian-plugins/permissionviewer)
+- BringBackTenor: [Install Link](https://lvwmwm.github.io/vendettian-plugins/BringBackTenor)
