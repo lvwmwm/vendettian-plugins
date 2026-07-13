@@ -1,0 +1,11 @@
+{
+  "name": "StreamQuality",
+  "description": "Unlock Nitro-quality streaming without Nitro",
+  "authors": [
+    { "name": "Livie", "id": "755950362342457384" }
+  ],
+  "main": "src/index.tsx",
+  "vendetta": {
+    "icon": "ic_stream_24px"
+  }
+}
