@@ -1,5 +1,6 @@
 import { after } from "@vendetta/patcher";
 import { findByName, findByProps } from "@vendetta/metro";
+import { findInReactTree } from "@vendetta/utils";
 
 import UserPermissionPage from "../components/UserPermissionPage";
 
@@ -11,12 +12,13 @@ function getMainItems(ret: any): any[] | null {
     if (Array.isArray(items) && Array.isArray(items[0])) return items[0];
     items = ret?.props?.children?.props?.items;
     if (Array.isArray(items) && Array.isArray(items[0])) return items[0];
-    return null;
+    const node = findInReactTree(ret, (n: any) => Array.isArray(n?.props?.items) && Array.isArray(n.props.items[0]));
+    return node?.props.items[0] ?? null;
 }
 
 function patchFn(args: any[], ret: any) {
     const props = args[0] ?? {};
-    const guildId = props.guildId ?? props.channel?.guild_id;
+    const guildId = props.guildId ?? props.displayProfile?.guildId ?? props.channel?.guild_id;
     const userId = props.user?.id;
     if (!guildId || !userId || !openLazy) return;
     const items = getMainItems(ret);
