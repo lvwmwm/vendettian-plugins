@@ -1,5 +1,6 @@
 import { instead } from "@vendetta/patcher";
-import { findByProps } from "@vendetta/metro";
+import { findByProps, findByPropsLazy } from "@vendetta/metro";
+import * as metroNS from "@vendetta/metro";
 import { plugin } from "@vendetta";
 
 import Settings from "./settings";
@@ -134,6 +135,44 @@ function makeThenable<T>(p: Promise<T>): Promise<T> {
     return p;
 }
 
+const GIF_PROVIDER_PATH = "modules/gif_picker/GifProvider.tsx";
+
+function patchSearchPlaceholder() {
+    const candidates: any[] = [];
+
+    if (typeof (metroNS as any).findByFilePathLazy === "function") {
+        candidates.push((metroNS as any).findByFilePathLazy(GIF_PROVIDER_PATH));
+    }
+
+    candidates.push(findByPropsLazy("GIF_PROVIDER", "GIF_PROVIDER_EMBED_NAME", "getSearchPlaceholder"));
+
+    const byProps = (() => {
+        try {
+            const mod = findByProps("getSearchPlaceholder");
+            return mod && mod.getSearchPlaceholder.length !== 2 ? mod : undefined;
+        } catch {
+            return undefined;
+        }
+    })();
+    if (byProps) candidates.push(byProps);
+
+    for (const target of candidates) {
+        try {
+            patches.push(
+                instead("getSearchPlaceholder", target, (args: any[], orig: Function) => {
+                    const placeholder = orig(...args);
+                    return typeof placeholder === "string" ? placeholder.replace(/klipy/gi, "Tenor") : placeholder;
+                }),
+            );
+            return;
+        } catch (e) {
+            console.warn("[BringBackTenor] search placeholder patch failed on candidate", e);
+        }
+    }
+
+    console.warn("[BringBackTenor] could not locate GIF provider module, search placeholder not patched");
+}
+
 let lastSearchController: AbortController | null = null;
 let lastTrendingController: AbortController | null = null;
 
@@ -158,6 +197,8 @@ export default {
                 instead("getProviderForAPIRequest", ProviderConfig, () => "tenor"),
             );
         }
+
+        patchSearchPlaceholder();
 
         patches.push(
             instead("get", httpModule.HTTP, (args: any[], orig: Function) => {
